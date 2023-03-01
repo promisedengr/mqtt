@@ -23,6 +23,8 @@ export default {
   mounted() {
     this.$root.$on("mqtt-connected", () => {
       this.$root.mqtt.sub("iws-foo", 0, this.onIwsFoo);
+
+      this.$root.mqtt.sub("iws_eric", 0, this.rawCallback);
       this.$root.mqtt.pub("iws-foo", "mounted");
       //this.$root.mqtt.onMessage = (topic, payload) => {console.log(topic, payload)}
     });
@@ -31,6 +33,9 @@ export default {
     onIwsFoo(topic, payload) {
       console.log(`Foo - topic: ${topic} payload: ${payload}`);
       this.msg = payload;
+    },
+    rawCallback(topic, payload) {
+      this.rawActual = JSON.parse(payload)["value"]
     },
   },
 };

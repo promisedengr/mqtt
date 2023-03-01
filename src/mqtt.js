@@ -50,16 +50,16 @@ export default class IWS_MQTT {
     }
   }
 
-  // addSubCallback(topic, callbackFn) {
-  //   console.log('addSubCallback')
-  //   if (this.subbedTopics.indexOf(topic) != -1) {
-  //     this.callbackMap.set(topic, callbackFn)
-  //   } else {
-  //     console.log(`Callback cannot be added to topic:
-  //     '${topic}'
-  //     because it does not exist.`)
-  //   }
-  // }
+  addSubCallback(topic, callbackFn) {
+    console.log('addSubCallback')
+    if (this.subbedTopics.indexOf(topic) != -1) {
+      this.callbackMap.set(topic, callbackFn)
+    } else {
+      console.log(`Callback cannot be added to topic:
+      '${topic}'
+      because it does not exist.`)
+    }
+  }
 
   pub(topic, payload, qos = 0, retain = false) {
     if (this.connected) {
