@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p>Publisher: {{ rawActual }}</p>
+    <p>Publisher: {{ rawActual.toFixed(2) }}</p>
   </div>
 </template>
 
@@ -10,62 +10,72 @@ export default {
   data() {
     return {
       rawActual: 0,
-      index : false
+      // index : false,
+      index: 1,
+      step: 0,
+      interval: null
     };
   },
   mounted() {
-    // this.rawPublisher()
-      // setInterval(this.rawPublisher, 1000)
+
     this.$root.$on("mqtt-connected", () => {
-      // console.log('adsfjie')
-      // this.$root.mqtt.pub("iws_eric", "0.5")
-      setInterval(this.rawPublisher, 1000)
-      // console.log("fix me");
-      // this.$root.mqtt.sub("iws-sim", this.rawActual, this.setNextCall);
-      // this.$root.mqtt.pub("iws-sim", "0.5");
+      this.$root.mqtt.sub("iws-status", 0, this.checkStatus);
     })
+    // this.interval = setInterval(this.rawPublisher, 1000)
+
   },
   methods: {
     rawPublisher() {
-      // // console.log(this)
+      // console.log(this)
       // // if (this.$root.mqtt.connected) {
       //   this.$root.$on("mqtt-connected", () => {
-      if (this.rawActual % 20 == 0)
-        this.index = !this.index
-      if (this.index)
-        this.rawActual = this.rawActual + 0.5
-      else
-        this.rawActual = this.rawActual - 0.5
-      // console.log(this.rawActual)
-        // this.rawActual = this.rawActual - (1 - parseInt(this.rawActual / 20 ) * 1)
-      // console.log("fix me");
+        // console.log(this)
+        // let step = this.$parent.$children[1].step
+        // console.log(step)
+      let tempPlus = this.rawActual + this.step
+      let tempMinus = this.rawActual - this.step
+      
+      if (this.rawActual == 0 || tempMinus < 0)
+        this.index = 1
+      else if (this.rawActual == 20 || tempPlus > 20)
+        this.index = -1
+
+      this.rawActual = this.rawActual + this.index * this.step
+      // if (this.rawActual % 20 == 0)
+      //   this.index = !this.index
+      
+      // if (temp > 20)
+      //   this.rawActual = this.rawActual - this.step
+      // else
+      //   this.rawActual = tempPlus
+      // if (this.index)
+      //   this.rawActual = this.rawActual + this.step
+      // else
+      //   this.rawActual = this.rawActual - this.step
+
       this.$root.mqtt.pub("iws_eric", `{"value": ${this.rawActual} }`)
-      //     this.$root.mqtt.sub("iws-sim", this.rawActual, this.setNextCall);
-      //     this.$root.mqtt.pub("iws-sim", "0.5");
-      //   })
+
+
     },
-    // setNextCall(topic, payload) {
-    //   console.log(payload)
-    //   console.log(parseFloat(payload))
-    //   if (parseFloat(payload) < 20 )
-    //     setTimeout(this.increaseCallback() ,1000)
-    //   else
-    //     setTimeout(this.decreaseCallback(), 1000)
-    // },
-    // increaseCallback () {
-    //   console.log('incease')
-    //   this.rawActual = this.rawActual + 0.5
-    //   this.$root.mqtt.sub("iws-sim", 0, this.setNextCall);
-    //   this.$root.mqtt.pub("iws-sim", "1.5");
-    // },
-    // decreaseCallback() {
-    //   console.log('decrease')
-    // }
-    // result(topic, payload) {
-    //   console.log(`Foorrr - topic: ${topic} payload: ${payload}`);
-    //   // setTimeout(this.rawPublisher, 1000)
-    //   // this.msg = payload;
-    // },
+    checkStatus(topic, payload) {
+      let status = JSON.parse(payload)["status"]
+        // console.log(status)
+      if (status > 0) {
+        console.log('start')
+        this.step = status
+        this.interval = setInterval(this.rawPublisher, 1000)
+        // this.rawActual = 0
+      } else {
+        this.rawActual = 0
+        clearInterval(this.interval)
+        this.interval = null
+        // this.index = false
+        this.index = 1
+      }
+
+      
+
+    }
   },
 };
 </script>
